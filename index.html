@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Design Department Director</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e4e4e7;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 15px 20px;
+            border-bottom: 1px solid #2d2d44;
+        }
+        
+        .header h1 {
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #f472b6, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+        
+        .header-info {
+            color: #71717a;
+            font-size: 0.8rem;
+        }
+        
+        /* Navigation */
+        .nav {
+            background: #13131f;
+            padding: 10px 20px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            border-bottom: 1px solid #2d2d44;
+        }
+        
+        .nav::-webkit-scrollbar { display: none; }
+        
+        .nav-item {
+            color: #71717a;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: #2d2d44;
+            color: #f472b6;
+        }
+        
+        /* Main Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 15px 20px;
+        }
+        
+        /* Cards */
+        .card {
+            background: #13131f;
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #2d2d44;
+        }
+        
+        .card-title {
+            color: #71717a;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        
+        /* KPI */
+        .kpi {
+            text-align: center;
+        }
+        
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #f472b6, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .kpi-trend {
+            color: #22c55e;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        
+        /* Hierarchy Tree */
+        .hierarchy {
+            grid-column: span 2;
+        }
+        
+        .employee {
+            background: #1e1e2f;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        
+        .employee-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .employee-header:hover {
+            background: #2d2d44;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+        
+        .avatar.l1 { background: linear-gradient(135deg, #f472b6, #db2777); }
+        .avatar.l2 { background: linear-gradient(135deg, #818cf8, #6366f1); }
+        .avatar.l3 { background: linear-gradient(135deg, #34d399, #059669); }
+        .avatar.l4 { background: linear-gradient(135deg, #fbbf24, #d97706); }
+        
+        .emp-info {
+            flex: 1;
+        }
+        
+        .emp-name {
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+        
+        .emp-role {
+            color: #71717a;
+            font-size: 0.75rem;
+        }
+        
+        .emp-stats {
+            text-align: right;
+        }
+        
+        .emp-task-count {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #f472b6;
+        }
+        
+        .emp-sub-count {
+            font-size: 0.7rem;
+            color: #71717a;
+        }
+        
+        .expand-icon {
+            color: #71717a;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+        
+        .expand-icon.open {
+            transform: rotate(180deg);
+        }
+        
+        /* Subordinates */
+        .subordinates {
+            display: none;
+            padding: 0 12px 12px 64px;
+        }
+        
+        .subordinates.open {
+            display: block;
+        }
+        
+        .subordinate {
+            background: #1a1a28;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sub-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
+        .sub-info {
+            flex: 1;
+        }
+        
+        .sub-name {
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .sub-role {
+            font-size: 0.7rem;
+            color: #71717a;
+        }
+        
+        .sub-tasks {
+            font-size: 0.75rem;
+            color: #f472b6;
+        }
+        
+        /* Tasks */
+        .tasks-card {
+            grid-column: span 2;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #1e1e2f;
+        }
+        
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        
+        .task-check {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            border: 2px solid #f472b6;
+            border-radius: 50%;
+            cursor: pointer;
+            margin-top: 2px;
+        }
+        
+        .task-check.done {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+        
+        .task-content {
+            flex: 1;
+        }
+        
+        .task-title {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+        
+        .task-title.done {
+            text-decoration: line-through;
+            color: #71717a;
+        }
+        
+        .task-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 0.75rem;
+            color: #71717a;
+        }
+        
+        .task-assignee {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .task-priority {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: bold;
+        }
+        
+        .priority.high { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .priority.medium { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .priority.low { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        
+        /* Projects */
+        .projects-card {
+            grid-column: span 2;
+        }
+        
+        .project-item {
+            background: #1e1e2f;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .project-name {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .project-status {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .status.active { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .status.pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .status.review { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+        
+        .project-team {
+            display: flex;
+            gap: -5px;
+            margin-bottom: 8px;
+        }
+        
+        .team-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #13131f;
+            margin-left: -8px;
+        }
+        
+        .team-avatar:first-child {
+            margin-left: 0;
+        }
+        
+        .project-progress {
+            height: 6px;
+            background: #2d2d44;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .project-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+        
+        .project-progress-fill.pink { background: linear-gradient(90deg, #f472b6, #c084fc); }
+        .project-progress-fill.blue { background: linear-gradient(90deg, #818cf8, #6366f1); }
+        .project-progress-fill.green { background: linear-gradient(90deg, #34d399, #059669); }
+        
+        /* Calendar */
+        .calendar-card {
+            grid-column: span 2;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .calendar-title {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        
+        .cal-day-header {
+            text-align: center;
+            color: #71717a;
+            font-size: 0.65rem;
+            padding: 5px 0;
+        }
+        
+        .cal-day {
+            background: #1e1e2f;
+            border-radius: 6px;
+            padding: 6px;
+            min-height: 55px;
+            font-size: 0.75rem;
+        }
+        
+        .cal-day.today {
+            border: 2px solid #f472b6;
+        }
+        
+        .cal-day .date {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .cal-event {
+            background: linear-gradient(135deg, #f472b6, #c084fc);
+            color: #fff;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .cal-event.purple { background: linear-gradient(135deg, #a78bfa, #8b5cf6); }
+        .cal-event.blue { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+        .cal-event.green { background: linear-gradient(135deg, #34d399, #059669); }
+        
+        /* Team Overview */
+        .team-overview {
+            grid-column: span 2;
+        }
+        
+        .team-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #1e1e2f;
+        }
+        
+        .team-row:last-child {
+            border-bottom: none;
+        }
+        
+        .team-member-info {
+            flex: 1;
+        }
+        
+        .team-member-name {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .team-member-role {
+            color: #71717a;
+            font-size: 0.75rem;
+        }
+        
+        .team-load {
+            width: 100px;
+            height: 8px;
+            background: #2d2d44;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .team-load-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .team-load-fill.green { background: #22c55e; }
+        .team-load-fill.yellow { background: #fbbf24; }
+        .team-load-fill.red { background: #ef4444; }
+        
+        .team-load-text {
+            font-size: 0.75rem;
+            width: 45px;
+            text-align: right;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 15px;
+            color: #71717a;
+            font-size: 0.75rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .hierarchy, .tasks-card, .projects-card, .calendar-card, .team-overview {
+                grid-column: span 2;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .hierarchy, .tasks-card, .projects-card, .calendar-card, .team-overview {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Design Department</h1>
+        <div class="header-info">Директор департамента дизайна | <span id="currentDate"></span></div>
+    </div>
+    
+    <div class="nav">
+        <div class="nav-item active">📊 Обзор</div>
+        <div class="nav-item">👥 Команда</div>
+        <div class="nav-item">📋 Задачи</div>
+        <div class="nav-item">🚀 Проекты</div>
+        <div class="nav-item">📅 Календарь</div>
+    </div>
+    
+    <div class="dashboard">
+        <!-- KPIs -->
+        <div class="card kpi">
+            <div class="card-title">Активные задачи</div>
+            <div class="kpi-value">47</div>
+            <div class="kpi-trend">↑ 12 за неделю</div>
+        </div>
+        
+        <div class="card kpi">
+            <div class="card-title">Команда</div>
+            <div class="kpi-value">12</div>
+            <div class="kpi-trend">2 в отпуске</div>
+        </div>
+        
+        <div class="card kpi">
+            <div class="card-title">Проекты</div>
+            <div class="kpi-value">8</div>
+            <div class="kpi-trend">3 на ревью</div>
+        </div>
+        
+        <div class="card kpi">
+            <div class="card-title">Дедлайны</div>
+            <div class="kpi-value">5</div>
+            <div class="kpi-trend" style="color: #ef4444;">2 просрочено</div>
+        </div>
+        
+        <!-- Hierarchy -->
+        <div class="card hierarchy">
+            <div class="card-title">👥 ИЕРАРХИЯ КОМАНДЫ</div>
+            
+            <div class="employee">
+                <div class="employee-header" onclick="toggleSubordinates(this)">
+                    <div class="avatar l1">👩‍💼</div>
+                    <div class="emp-info">
+                        <div class="emp-name">Анна Морозова</div>
+                        <div class="emp-role">Директор департамента</div>
+                    </div>
+                    <div class="emp-stats">
+                        <div class="emp-task-count">0</div>
+                        <div class="emp-sub-count">5 подчинённых</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="subordinates">
+                    <div class="subordinate">
+                        <div class="sub-avatar">👨‍🎨</div>
+                        <div class="sub-info">
+                            <div class="sub-name">Дмитрий Волков</div>
+                            <div class="sub-role">Lead UI/UX</div>
+                        </div>
+                        <div class="sub-tasks">8 задач</div>
+                    </div>
+                    <div class="subordinate">
+                        <div class="sub-avatar">👩‍🎨</div>
+                        <div class="sub-info">
+                            <div class="sub-name">Елена Соколова</div>
+                            <div class="sub-role">Senior Designer</div>
+                        </div>
+                        <div class="sub-tasks">6 задач</div>
+                    </div>
+                    <div class="subordinate">
+                        <div class="sub-avatar">👨‍🎨</div>
+                        <div class="sub-info">
+                            <div class="sub-name">Максим Козлов</div>
+                            <div class="sub-role">Motion Designer</div>
+                        </div>
+                        <div class="sub-tasks">4 задачи</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="employee">
+                <div class="employee-header" onclick="toggleSubordinates(this)">
+                    <div class="avatar l2">👨‍🎨</div>
+                    <div class="emp-info">
+                        <div class="emp-name">Дмитрий Волков</div>
+                        <div class="emp-role">Lead UI/UX</div>
+                    </div>
+                    <div class="emp-stats">
+                        <div class="emp-task-count">8</div>
+                        <div class="emp-sub-count">3 подчинённых</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="subordinates">
+                    <div class="subordinate">
+                        <div class="sub-avatar">👩‍🎨</div>
+                        <div class="sub-info">
+                            <div class="sub-name">Ольга Петрова</div>
+                            <div class="sub-role">UI Designer</div>
+                        </div>
+                        <div class="sub-tasks">5 задач</div>
+                    </div>
+                    <div class="subordinate">
+                        <div class="sub-avatar">👨‍🎨</div>
+                        <div class="sub-info">
+                            <div class="sub-name">Игорь Новиков</div>
+                            <div class="sub-role">UX Researcher</div>
+                        </div>
+                        <div class="sub-tasks">3 задачи</div>
+                    </div>
+                    <div class="subordinate">
+                        <div class="sub-avatar">👩‍🎨</div>
+                        <div class="sub-info">
+                            <div class="sub-name">Карина Смирнова</div>
+                            <div class="sub-role">Product Designer</div>
+                        </div>
+                        <div class="sub-tasks">4 задачи</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="employee">
+                <div class="employee-header" onclick="toggleSubordinates(this)">
+                    <div class="avatar l3">👩‍🎨</div>
+                    <div class="emp-info">
+                        <div class="emp-name">Елена Соколова</div>
+                        <div class="emp-role">Senior Designer</div>
+                    </div>
+                    <div class="emp-stats">
+                        <div class="emp-task-count">6</div>
+                        <div class="emp-sub-count">нет</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="subordinates">
+                    <div style="color: #71717a; font-size: 0.8rem; padding: 10px;">Нет прямых подчинённых</div>
+                </div>
+            </div>
+            
+            <div class="employee">
+                <div class="employee-header" onclick="toggleSubordinates(this)">
+                    <div class="avatar l4">👨‍🎨</div>
+                    <div class="emp-info">
+                        <div class="emp-name">Максим Козлов</div>
+                        <div class="emp-role">Motion Designer</div>
+                    </div>
+                    <div class="emp-stats">
+                        <div class="emp-task-count">4</div>
+                        <div class="emp-sub-count">нет</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="subordinates">
+                    <div style="color: #71717a; font-size: 0.8rem; padding: 10px;">Нет прямых подчинённых</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tasks -->
+        <div class="card tasks-card">
+            <div class="card-title">📋 ЗАДАЧИ НА СЕГОДНЯ</div>
+            
+            <div class="task-item">
+                <div class="task-check"></div>
+                <div class="task-content">
+                    <div class="task-title">Дизайн главной страницы LMS</div>
+                    <div class="task-meta">
+                        <span class="task-assignee">👨‍🎨 Дмитрий</span>
+                        <span>Дедлайн: сегодня</span>
+                        <span class="task-priority high">Высокий</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="task-item">
+                <div class="task-check"></div>
+                <div class="task-content">
+                    <div class="task-title">Ревью макетов мобильного приложения</div>
+                    <div class="task-meta">
+                        <span class="task-assignee">👩‍🎨 Елена</span>
+                        <span>Дедлайн: завтра</span>
+                        <span class="task-priority medium">Средний</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="task-item">
+                <div class="task-check done"></div>
+                <div class="task-content">
+                    <div class="task-title done">Утвердить дизайн-систему</div>
+                    <div class="task-meta">
+                        <span class="task-assignee">👩‍💼 Анна</span>
+                        <span>Завершено</span>
+                        <span class="task-priority low">Низкий</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="task-item">
+                <div class="task-check"></div>
+                <div class="task-content">
+                    <div class="task-title">Подготовка презентации для клиента</div>
+                    <div class="task-meta">
+                        <span class="task-assignee">👨‍🎨 Максим</span>
+                        <span>Дедлайн: 20.04</span>
+                        <span class="task-priority high">Высокий</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Projects -->
+        <div class="card projects-card">
+            <div class="card-title">🚀 ПРОЕКТЫ</div>
+            
+            <div class="project-item">
+                <div class="project-header">
+                    <div class="project-name">Мобильное приложение BankApp</div>
+                    <div class="project-status active">Активный</div>
+                </div>
+                <div class="project-team">
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #f472b6, #db2777);">👩‍💼</div>
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #818cf8, #6366f1);">👨‍🎨</div>
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #34d399, #059669);">👩‍🎨</div>
+                </div>
+                <div class="project-progress">
+                    <div class="project-progress-fill pink" style="width: 75%;"></div>
+                </div>
+            </div>
+            
+            <div class="project-item">
+                <div class="project-header">
+                    <div class="project-name">Редизайн корпоративного сайта</div>
+                    <div class="project-status review">На ревью</div>
+                </div>
+                <div class="project-team">
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #f472b6, #db2777);">👩‍💼</div>
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #fbbf24, #d97706);">👨‍🎨</div>
+                </div>
+                <div class="project-progress">
+                    <div class="project-progress-fill blue" style="width: 90%;"></div>
+                </div>
+            </div>
+            
+            <div class="project-item">
+                <div class="project-header">
+                    <div class="project-name">Дизайн-система Components</div>
+                    <div class="project-status pending">В планировании</div>
+                </div>
+                <div class="project-team">
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #f472b6, #db2777);">👩‍💼</div>
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #818cf8, #6366f1);">👨‍🎨</div>
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #34d399, #059669);">👩‍🎨</div>
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #fbbf24, #d97706);">👨‍🎨</div>
+                </div>
+                <div class="project-progress">
+                    <div class="project-progress-fill green" style="width: 35%;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calendar -->
+        <div class="card calendar-card">
+            <div class="calendar-header">
+                <div class="calendar-title">📅 Апрель 2026</div>
+            </div>
+            
+            <div class="calendar-grid">
+                <div class="cal-day-header">Пн</div>
+                <div class="cal-day-header">Вт</div>
+                <div class="cal-day-header">Ср</div>
+                <div class="cal-day-header">Чт</div>
+                <div class="cal-day-header">Пт</div>
+                <div class="cal-day-header">Сб</div>
+                <div class="cal-day-header">Вс</div>
+                
+                <div class="cal-day"><div class="date">30</div></div>
+                <div class="cal-day"><div class="date">31</div></div>
+                <div class="cal-day today">
+                    <div class="date">1</div>
+                    <div class="cal-event">Ревью</div>
+                </div>
+                <div class="cal-day">
+                    <div class="date">2</div>
+                    <div class="cal-event purple">Демо</div>
+                </div>
+                <div class="cal-day">
+                    <div class="date">3</div>
+                    <div class="cal-event blue">1-on-1</div>
+                </div>
+                <div class="cal-day"><div class="date">4</div></div>
+                <div class="cal-day"><div class="date">5</div></div>
+                
+                <div class="cal-day">
+                    <div class="date">6</div>
+                    <div class="cal-event green">Стендап</div>
+                </div>
+                <div class="cal-day">
+                    <div class="date">7</div>
+                    <div class="cal-event">Ревью</div>
+                </div>
+                <div class="cal-day">
+                    <div class="date">8</div>
+                    <div class="cal-event purple">Презентация</div>
+                </div>
+                <div class="cal-day">
+                    <div class="date">9</div>
+                    <div class="cal-event blue">Спринт</div>
+                </div>
+                <div class="cal-day">
+                    <div class="date">10</div>
+                    <div class="cal-event green">Дедлайн</div>
+                </div>
+                <div class="cal-day"><div class="date">11</div></div>
+                <div class="cal-day"><div class="date">12</div></div>
+                
+                <div class="cal-day">
+                    <div class="date">13</div>
+                    <div class="cal-event">Ретро</div>
+                </div>
+                <div class="cal-day">
+                    <div class="date">14</div>
+                    <div class="cal-event purple">Демо</div>
+                </div>
+                <div class="cal-day"><div class="date">15</div></div>
+                <div class="cal-day"><div class="date">16</div></div>
+                <div class="cal-day"><div class="date">17</div></div>
+                <div class="cal-day"><div class="date">18</div></div>
+                <div class="cal-day"><div class="date">19</div></div>
+                
+                <div class="cal-day">
+                    <div class="date">20</div>
+                    <div class="cal-event green">Дедлайн</div>
+                </div>
+                <div class="cal-day"><div class="date">21</div></div>
+                <div class="cal-day"><div class="date">22</div></div>
+                <div class="cal-day"><div class="date">23</div></div>
+                <div class="cal-day"><div class="date">24</div></div>
+                <div class="cal-day"><div class="date">25</div></div>
+                <div class="cal-day"><div class="date">26</div></div>
+            </div>
+        </div>
+        
+        <!-- Team Overview -->
+        <div class="card team-overview">
+            <div class="card-title">📊 НАГРУЗКА КОМАНДЫ</div>
+            
+            <div class="team-row">
+                <div class="team-member-info">
+                    <div class="team-member-name">Дмитрий Волков</div>
+                    <div class="team-member-role">Lead UI/UX</div>
+                </div>
+                <div class="team-load">
+                    <div class="team-load-fill yellow" style="width: 85%;"></div>
+                </div>
+                <div class="team-load-text" style="color: #fbbf24;">85%</div>
+            </div>
+            
+            <div class="team-row">
+                <div class="team-member-info">
+                    <div class="team-member-name">Елена Соколова</div>
+                    <div class="team-member-role">Senior Designer</div>
+                </div>
+                <div class="team-load">
+                    <div class="team-load-fill green" style="width: 65%;"></div>
+                </div>
+                <div class="team-load-text" style="color: #22c55e;">65%</div>
+            </div>
+            
+            <div class="team-row">
+                <div class="team-member-info">
+                    <div class="team-member-name">Максим Козлов</div>
+                    <div class="team-member-role">Motion Designer</div>
+                </div>
+                <div class="team-load">
+                    <div class="team-load-fill red" style="width: 100%;"></div>
+                </div>
+                <div class="team-load-text" style="color: #ef4444;">100%</div>
+            </div>
+            
+            <div class="team-row">
+                <div class="team-member-info">
+                    <div class="team-member-name">Ольга Петрова</div>
+                    <div class="team-member-role">UI Designer</div>
+                </div>
+                <div class="team-load">
+                    <div class="team-load-fill green" style="width: 55%;"></div>
+                </div>
+                <div class="team-load-text" style="color: #22c55e;">55%</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        Design Department Dashboard v1.0 | <span id="updateTime"></span>
+    </div>
+    
+    <script>
+        // Set dates
+        const now = new Date();
+        document.getElementById('currentDate').textContent = now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+        document.getElementById('updateTime').textContent = now.toLocaleString('ru-RU');
+        
+        // Toggle subordinates
+        function toggleSubordinates(header) {
+            const subs = header.nextElementSibling;
+            const icon = header.querySelector('.expand-icon');
+            subs.classList.toggle('open');
+            icon.classList.toggle('open');
+        }
+        
+        // Task checkbox toggle
+        document.querySelectorAll('.task-check').forEach(checkbox => {
+            checkbox.addEventListener('click', function() {
+                this.classList.toggle('done');
+                const title = this.nextElementSibling.querySelector('.task-title');
+                title.classList.toggle('done');
+            });
+        });
+        
+        // Nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Animate progress bars
+        document.querySelectorAll('.project-progress-fill, .team-load-fill').forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 300);
+        });
+    </script>
+</body>
+</html>
